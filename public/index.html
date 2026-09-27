@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wedding Planner — Farhan &amp; Tazkiah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['"DM Sans"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif']
+          },
+          colors: {
+            accent: { DEFAULT: '#C17E61', light: '#D4967B', dark: '#A66B50' },
+            surface: { DEFAULT: '#FFFFFF', alt: '#F9FAFB', dark: '#111111', 'dark-alt': '#1A1A1A' },
+            ink: { DEFAULT: '#1A1A1A', secondary: '#6B7280', tertiary: '#9CA3AF' },
+            rule: '#E5E7EB',
+            'rule-dark': '#2A2A2A'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #FFFFFF; color: #1A1A1A; min-height: 100vh; transition: background-color 0.2s, color 0.2s; }
+    .dark body, body.dark { background: #111111; color: #E5E7EB; }
+    * { scrollbar-width: thin; scrollbar-color: #9CA3AF transparent; }
+
+    /* Tab styles */
+    .tab-btn { font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.8125rem; padding: 0.5rem 0.875rem; border-bottom: 2px solid transparent; color: #6B7280; transition: color 0.15s, border-color 0.15s; cursor: pointer; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; }
+    .tab-btn:hover { color: #1A1A1A; }
+    .tab-btn.active { color: #1A1A1A; border-bottom-color: #C17E61; }
+    .dark .tab-btn { color: #9CA3AF; }
+    .dark .tab-btn:hover { color: #E5E7EB; }
+    .dark .tab-btn.active { color: #E5E7EB; border-bottom-color: #C17E61; }
+
+    /* Metric block */
+    .metric-block { padding: 0.75rem 0; }
+    .metric-label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6B7280; font-weight: 500; margin-bottom: 0.25rem; }
+    .metric-value { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1.375rem; line-height: 1.2; color: #1A1A1A; }
+    .metric-value.large { font-size: 1.75rem; }
+    .dark .metric-label { color: #9CA3AF; }
+    .dark .metric-value { color: #E5E7EB; }
+
+    /* Budget breakdown expandable */
+    .budget-item { border-bottom: 1px solid #E5E7EB; }
+    .dark .budget-item { border-bottom-color: #2A2A2A; }
+    .budget-item summary { cursor: pointer; padding: 0.625rem 0; display: flex; align-items: center; justify-content: space-between; list-style: none; }
+    .budget-item summary::-webkit-details-marker { display: none; }
+    .budget-item summary::marker { content: ''; }
+    .budget-item .chevron { width: 14px; height: 14px; transition: transform 0.2s; color: #9CA3AF; flex-shrink: 0; }
+    .budget-item[open] .chevron { transform: rotate(90deg); }
+    .sub-item { padding: 0.3rem 0 0.3rem 1.125rem; display: flex; justify-content: space-between; font-size: 0.75rem; color: #6B7280; }
+    .dark .sub-item { color: #9CA3AF; }
+
+    /* Progress bar */
+    .progress-track { height: 6px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
+    .dark .progress-track { background: #2A2A2A; }
+    .progress-fill { height: 100%; background: #C17E61; border-radius: 3px; transition: width 0.6s ease-out; }
+
+    /* Section headings */
+    .section-title { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8125rem; color: #1A1A1A; margin-bottom: 0.625rem; display: flex; align-items: center; gap: 0.5rem; }
+    .dark .section-title { color: #E5E7EB; }
+
+    /* Dark mode toggle */
+    .theme-toggle { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #E5E7EB; border-radius: 6px; background: #FFFFFF; cursor: pointer; font-size: 0.875rem; transition: background 0.15s; }
+    .dark .theme-toggle { background: #1A1A1A; border-color: #2A2A2A; }
+    .theme-toggle:hover { background: #F9FAFB; }
+    .dark .theme-toggle:hover { background: #2A2A2A; }
+
+    /* Table */
+    .data-table { width: 100%; font-size: 0.8125rem; border-collapse: collapse; }
+    .data-table th { text-align: left; padding: 0.5rem 0.75rem; font-weight: 500; color: #6B7280; border-bottom: 1px solid #E5E7EB; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .dark .data-table th { color: #9CA3AF; border-bottom-color: #2A2A2A; }
+    .data-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #F3F4F6; }
+    .dark .data-table td { border-bottom-color: #1F1F1F; }
+    .data-table tr:hover td { background: #F9FAFB; }
+    .dark .data-table tr:hover td { background: #1A1A1A; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 8px; padding: 1.5rem; width: 100%; max-width: 28rem; }
+    .dark .modal-box { background: #1A1A1A; border-color: #2A2A2A; }
+
+    /* Form inputs */
+    .form-input { width: 100%; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8125rem; font-family: 'Inter', sans-serif; color: #1A1A1A; transition: border-color 0.15s; }
+    .form-input:focus { outline: none; border-color: #C17E61; }
+    .dark .form-input { background: #111111; border-color: #2A2A2A; color: #E5E7EB; }
+
+    /* Buttons */
+    .btn-primary { background: #C17E61; color: #FFFFFF; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    .btn-primary:hover { background: #A66B50; }
+    .btn-secondary { background: #F3F4F6; color: #1A1A1A; border: 1px solid #E5E7EB; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    .dark .btn-secondary { background: #2A2A2A; color: #E5E7EB; border-color: #3A3A3A; }
+    .btn-secondary:hover { background: #E5E7EB; }
+    .dark .btn-secondary:hover { background: #3A3A3A; }
+
+    /* Badge */
+    .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.4375rem; border-radius: 3px; font-size: 0.625rem; font-weight: 500; }
+    .badge-farhan { background: #FEF3E2; color: #A66B50; }
+    .dark .badge-farhan { background: #3D2A1A; color: #D4967B; }
+    .badge-tazkiah { background: #F0F0F0; color: #555555; }
+    .dark .badge-tazkiah { background: #2A2A2A; color: #AAAAAA; }
+
+    /* Toast */
+    #toast { position: fixed; bottom: 1rem; right: 1rem; background: #C17E61; color: #FFFFFF; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8125rem; transform: translateY(120%); opacity: 0; transition: all 0.25s; z-index: 100; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .metric-value { font-size: 1.125rem; }
+      .metric-value.large { font-size: 1.375rem; }
+    }
+
+    /* Countdown compact in header */
+    .countdown-inline { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8125rem; color: #C17E61; white-space: nowrap; }
+    .dark .countdown-inline { color: #D4967B; }
+
+    /* Sync dot */
+    .sync-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .sync-dot.connected { background: #10B981; }
+    .sync-dot.disconnected { background: #9CA3AF; }
+    .sync-dot.error { background: #EF4444; }
+
+    /* Number input spinners */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    /* Chart containers */
+    .chart-container { position: relative; width: 100%; }
+    .chart-container.pie { max-width: 200px; margin: 0 auto; }
+
+    /* Guest chart layout */
+    .guest-summary { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .guest-summary-item { flex: 1; min-width: 70px; }
+    .guest-summary-label { font-size: 0.625rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.125rem; }
+    .dark .guest-summary-label { color: #9CA3AF; }
+    .guest-summary-value { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1.125rem; color: #1A1A1A; }
+    .dark .guest-summary-value { color: #E5E7EB; }
+
+    /* RSVP stat boxes */
+    .rsvp-stat { text-align: center; padding: 0.5rem; background: #F9FAFB; border-radius: 4px; }
+    .dark .rsvp-stat { background: #1A1A1A; }
+    .rsvp-stat-value { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1.125rem; }
+    .rsvp-stat-label { font-size: 0.625rem; color: #6B7280; margin-top: 0.125rem; }
+    .dark .rsvp-stat-label { color: #9CA3AF; }
+
+    /* Divider */
+    .divider { height: 1px; background: #E5E7EB; margin: 0.75rem 0; }
+    .dark .divider { background: #2A2A2A; }
+
+    /* Inline metric pairs */
+    .metric-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.25rem 0; }
+    .metric-row-label { font-size: 0.8125rem; color: #6B7280; }
+    .dark .metric-row-label { color: #9CA3AF; }
+    .metric-row-value { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.875rem; color: #1A1A1A; }
+    .dark .metric-row-value { color: #E5E7EB; }
+
+    /* Section card */
+    .section-card { background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 6px; padding: 0.875rem 1rem; }
+    .dark .section-card { background: #1A1A1A; border-color: #2A2A2A; }
+
+    /* Sync panel in dashboard */
+    .sync-panel { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; padding: 0.75rem; }
+    .dark .sync-panel { background: #1A1A1A; border-color: #2A2A2A; }
+
+    /* Fund row */
+    .fund-row { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; font-size: 0.8125rem; }
+    .fund-row-name { color: #6B7280; }
+    .dark .fund-row-name { color: #9CA3AF; }
+    .fund-row-value { font-family: 'DM Sans', sans-serif; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-white text-ink min-h-screen font-sans">
+
+  <!-- HEADER -->
+  <header class="border-b border-rule dark:border-rule-dark sticky top-0 z-50 bg-white dark:bg-surface-dark" id="app-header">
+    <div class="max-w-6xl mx-auto px-4 h-11 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="font-heading font-bold text-sm tracking-tight text-ink dark:text-surface">Farhan &amp; Tazkiah</span>
+        <span class="text-ink-tertiary text-xs hidden sm:inline">Wedding Planner</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="countdown-inline" id="countdown-text">—</span>
+        <span class="w-px h-4 bg-rule dark:bg-rule-dark hidden sm:block"></span>
+        <div class="flex items-center gap-1.5 text-xs text-ink-tertiary cursor-pointer" onclick="checkSyncStatus()" title="Klik untuk cek status sync">
+          <span class="sync-dot disconnected" id="sync-dot"></span>
+          <span id="sync-status-text" class="hidden sm:inline">Sync</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark mode">
+          <span id="theme-icon">☀</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV TABS -->
+  <nav class="border-b border-rule dark:border-rule-dark bg-white dark:bg-surface-dark">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex gap-0 overflow-x-auto" id="nav-tabs">
+        <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="tab-btn" data-tab="guests" onclick="switchTab('guests')">Tamu</button>
+        <button class="tab-btn" data-tab="budget" onclick="switchTab('budget')">Budget</button>
+        <button class="tab-btn" data-tab="savings" onclick="switchTab('savings')">Tabungan</button>
+        <button class="tab-btn" data-tab="sync" onclick="switchTab('sync')">Sync</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="max-w-6xl mx-auto px-4 py-4">
+
+    <!-- ===== DASHBOARD TAB ===== -->
+    <div id="tab-dashboard" class="tab-content">
+
+      <!-- ROW 1: Key Metrics -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 mb-4 pb-4 border-b border-rule dark:border-rule-dark">
+        <div class="metric-block">
+          <div class="metric-label">Total Budget</div>
+          <div class="metric-value" id="stat-total-budget">—</div>
+        </div>
+        <div class="metric-block">
+          <div class="metric-label">Dana Tersedia</div>
+          <div class="metric-value" id="stat-total-funds">—</div>
+        </div>
+        <div class="metric-block">
+          <div class="metric-label">Uang Nanti</div>
+          <div class="metric-value" id="stat-uang-nanti">—</div>
+        </div>
+        <div class="metric-block">
+          <div class="metric-label">Hari ke Nikah</div>
+          <div class="metric-value large" id="stat-days-wedding">—</div>
+        </div>
+      </div>
+
+      <!-- ROW 2: Budget Breakdown + Pie Chart -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-5">
+        <!-- Budget Pie Chart -->
+        <div class="lg:col-span-2">
+          <div class="section-title">Alokasi Budget</div>
+          <div class="chart-container pie">
+            <canvas id="budgetPieChart"></canvas>
+          </div>
+          <div id="budget-legend" class="mt-2 space-y-0.5"></div>
+        </div>
+
+        <!-- Budget Breakdown with expandable sub-items -->
+        <div class="lg:col-span-3">
+          <div class="section-title">Budget Detail</div>
+          <div class="section-card p-0" style="padding: 0.375rem 0;">
+            <div id="budget-breakdown-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 3: Guest Management + RSVP Status -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+        <!-- Guest Summary + Bar Chart -->
+        <div class="lg:col-span-2">
+          <div class="section-title">Tamu</div>
+          <div class="section-card">
+            <div class="guest-summary mb-3">
+              <div class="guest-summary-item">
+                <div class="guest-summary-label">Total Pax</div>
+                <div class="guest-summary-value" id="dash-total-pax">—</div>
+              </div>
+              <div class="guest-summary-item">
+                <div class="guest-summary-label">Undangan</div>
+                <div class="guest-summary-value" id="dash-total-undangan">—</div>
+              </div>
+              <div class="guest-summary-item">
+                <div class="guest-summary-label">Cetak</div>
+                <div class="guest-summary-value" id="dash-total-cetak">—</div>
+              </div>
+              <div class="guest-summary-item">
+                <div class="guest-summary-label">VIP</div>
+                <div class="guest-summary-value" id="dash-total-vip">—</div>
+              </div>
+            </div>
+            <div class="chart-container" style="height: 180px;">
+              <canvas id="guestBarChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- RSVP Status -->
+        <div>
+          <div class="section-title">RSVP Status</div>
+          <div class="section-card">
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div class="rsvp-stat">
+                <div class="rsvp-stat-value" style="color:#10B981" id="rsvp-confirmed">0</div>
+                <div class="rsvp-stat-label">Confirmed</div>
+              </div>
+              <div class="rsvp-stat">
+                <div class="rsvp-stat-value" style="color:#D97706" id="rsvp-pending">0</div>
+                <div class="rsvp-stat-label">Pending</div>
+              </div>
+              <div class="rsvp-stat">
+                <div class="rsvp-stat-value" id="rsvp-not-attending">0</div>
+                <div class="rsvp-stat-label">Tidak Hadir</div>
+              </div>
+              <div class="rsvp-stat">
+                <div class="rsvp-stat-value" style="color:#C17E61" id="rsvp-checkedin">0</div>
+                <div class="rsvp-stat-label">Checked In</div>
+              </div>
+            </div>
+            <div class="chart-container pie" style="max-width:150px;">
+              <canvas id="rsvpPieChart"></canvas>
+            </div>
+            <div class="mt-2 text-center">
+              <button onclick="refreshRSVPStats()" class="btn-secondary text-xs" style="padding: 0.25rem 0.625rem;">Refresh</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 4: Savings Tracker + Projection -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+        <!-- Savings Progress Bars -->
+        <div class="lg:col-span-1">
+          <div class="section-title">Tabungan</div>
+          <div class="section-card space-y-3">
+            <div>
+              <div class="metric-row">
+                <span class="metric-row-label">Farhan</span>
+                <span class="metric-row-value" id="dash-sav-farhan">—</span>
+              </div>
+              <div class="progress-track mt-1">
+                <div class="progress-fill" id="bar-sav-farhan" style="width:0%"></div>
+              </div>
+              <div class="text-xs text-ink-tertiary mt-0.5" id="dash-sav-farhan-detail"></div>
+            </div>
+            <div>
+              <div class="metric-row">
+                <span class="metric-row-label">Tazkiah</span>
+                <span class="metric-row-value" id="dash-sav-tazkiah">—</span>
+              </div>
+              <div class="progress-track mt-1">
+                <div class="progress-fill" id="bar-sav-tazkiah" style="width:0%"></div>
+              </div>
+              <div class="text-xs text-ink-tertiary mt-0.5" id="dash-sav-tazkiah-detail"></div>
+            </div>
+            <div class="divider"></div>
+            <div class="metric-row">
+              <span class="metric-row-label">Combined</span>
+              <span class="metric-row-value" id="dash-sav-combined">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Savings Projection Chart -->
+        <div class="lg:col-span-2">
+          <div class="section-title">Proyeksi Tabungan</div>
+          <div class="section-card">
+            <div class="chart-container" style="height: 180px;">
+              <canvas id="savingsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 5: Fund Sources -->
+      <div class="mb-5">
+        <div class="section-title">Sumber Dana</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="section-card">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#C17E61">Farhan</div>
+            <div id="dash-farhan-funds" class="space-y-1"></div>
+          </div>
+          <div class="section-card">
+            <div class="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-2">Tazkiah</div>
+            <div id="dash-tazkiah-funds" class="space-y-1"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-dashboard -->
+
+    <!-- ===== GUESTS TAB ===== -->
+    <div id="tab-guests" class="tab-content hidden">
+      <!-- Guest Summary -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div class="section-card text-center">
+          <div class="metric-label">Total Pax</div>
+          <div class="metric-value" id="guest-total-pax">0</div>
+          <div class="text-xs text-ink-tertiary mt-0.5">Tersedia: <span id="guest-avail-pax">0</span></div>
+        </div>
+        <div class="section-card text-center">
+          <div class="metric-label">Total Undangan</div>
+          <div class="metric-value" id="guest-total-undangan">0</div>
+          <div class="text-xs text-ink-tertiary mt-0.5">Tersedia: <span id="guest-avail-undangan">0</span></div>
+        </div>
+        <div class="section-card text-center">
+          <div class="metric-label">Cetak</div>
+          <div class="metric-value" id="guest-total-cetak">0</div>
+          <div class="text-xs text-ink-tertiary mt-0.5">Tersedia: <span id="guest-avail-cetak">0</span></div>
+        </div>
+        <div class="section-card text-center">
+          <div class="metric-label">VIP</div>
+          <div class="metric-value" id="guest-total-vip">0</div>
+          <div class="text-xs text-ink-tertiary mt-0.5">Tersedia: <span id="guest-avail-vip">0</span></div>
+        </div>
+      </div>
+
+      <!-- Capacity Bars -->
+      <div class="section-card mb-4">
+        <div class="section-title">Kapasitas Tamu</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#C17E61">Farhan</div>
+            <div class="space-y-2" id="farhan-capacity-bars"></div>
+          </div>
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-2">Tazkiah</div>
+            <div class="space-y-2" id="tazkiah-capacity-bars"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guest Table -->
+      <div class="section-card">
+        <div class="flex items-center justify-between mb-3">
+          <div class="section-title" style="margin-bottom:0">Daftar Kategori Tamu</div>
+          <div class="flex gap-2">
+            <button onclick="syncGuestsToUndangan()" id="sync-btn" class="btn-primary text-xs" style="padding: 0.375rem 0.75rem;">Sync ke Undangan</button>
+            <button onclick="openGuestModal()" class="btn-primary text-xs" style="padding: 0.375rem 0.75rem;">+ Tambah</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Kategori</th>
+                <th>Pemilik</th>
+                <th class="text-right">Pax</th>
+                <th class="text-right">Undangan</th>
+                <th class="text-right">Cetak</th>
+                <th class="text-right">VIP</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="guest-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /tab-guests -->
+
+    <!-- ===== BUDGET TAB ===== -->
+    <div id="tab-budget" class="tab-content hidden">
+      <!-- Budget Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div class="section-card">
+          <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#C17E61">Budget Farhan</div>
+          <div class="space-y-0.5">
+            <div class="metric-row"><span class="metric-row-label">Total Budget</span><span class="metric-row-value" id="bgt-farhan-total">—</span></div>
+            <div class="metric-row"><span class="metric-row-label">Total Actual</span><span class="metric-row-value" id="bgt-farhan-actual">—</span></div>
+            <div class="divider"></div>
+            <div class="metric-row"><span class="metric-row-label">Sisa</span><span class="font-semibold" style="color:#10B981" id="bgt-farhan-remain">—</span></div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-2">Budget Tazkiah</div>
+          <div class="space-y-0.5">
+            <div class="metric-row"><span class="metric-row-label">Total Budget</span><span class="metric-row-value" id="bgt-tazkiah-total">—</span></div>
+            <div class="metric-row"><span class="metric-row-label">Total Actual</span><span class="metric-row-value" id="bgt-tazkiah-actual">—</span></div>
+            <div class="divider"></div>
+            <div class="metric-row"><span class="metric-row-label">Sisa</span><span class="font-semibold" style="color:#10B981" id="bgt-tazkiah-remain">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Budget vs Actual Chart -->
+      <div class="section-card mb-4">
+        <div class="section-title">Budget vs Actual</div>
+        <div class="chart-container" style="height: 180px;">
+          <canvas id="budgetCompareChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Budget Table -->
+      <div class="section-card">
+        <div class="flex items-center justify-between mb-3">
+          <div class="section-title" style="margin-bottom:0">Detail Budget</div>
+          <button onclick="openBudgetModal()" class="btn-primary text-xs" style="padding: 0.375rem 0.75rem;">+ Tambah</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Kategori</th>
+                <th>Pemilik</th>
+                <th class="text-right">Budget</th>
+                <th class="text-right">Actual</th>
+                <th class="text-right">Sisa</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="budget-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sub-items detail per kategori -->
+      <div id="budget-subitems-container" class="mt-4 space-y-4"></div>
+    </div><!-- /tab-budget -->
+
+    <!-- ===== SAVINGS TAB ===== -->
+    <div id="tab-savings" class="tab-content hidden">
+      <!-- Savings Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="section-card">
+          <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#C17E61">Tabungan Farhan</div>
+          <div class="space-y-1">
+            <div class="metric-row"><span class="metric-row-label">Per Bulan</span><span class="metric-row-value" id="sav-farhan-monthly">—</span></div>
+            <div class="metric-row"><span class="metric-row-label">Bulan</span><span class="metric-row-value" id="sav-farhan-months">—</span></div>
+            <div class="divider"></div>
+            <div class="metric-row"><span class="metric-row-label">Total Projected</span><span class="font-semibold" style="color:#10B981" id="sav-farhan-total">—</span></div>
+            <button onclick="editSavings('farhan')" class="btn-secondary w-full text-xs mt-1">Edit</button>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-2">Tabungan Tazkiah</div>
+          <div class="space-y-1">
+            <div class="metric-row"><span class="metric-row-label">Per Bulan</span><span class="metric-row-value" id="sav-tazkiah-monthly">—</span></div>
+            <div class="metric-row"><span class="metric-row-label">Bulan</span><span class="metric-row-value" id="sav-tazkiah-months">—</span></div>
+            <div class="divider"></div>
+            <div class="metric-row"><span class="metric-row-label">Total Projected</span><span class="font-semibold" style="color:#10B981" id="sav-tazkiah-total">—</span></div>
+            <button onclick="editSavings('tazkiah')" class="btn-secondary w-full text-xs mt-1">Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Savings Projection Chart -->
+      <div class="section-card mb-4">
+        <div class="section-title">Proyeksi Tabungan</div>
+        <div class="chart-container" style="height: 200px;">
+          <canvas id="savingsChartFull"></canvas>
+        </div>
+      </div>
+
+      <!-- Fund Sources -->
+      <div class="section-card">
+        <div class="flex items-center justify-between mb-3">
+          <div class="section-title" style="margin-bottom:0">Sumber Dana</div>
+          <button onclick="openFundModal()" class="btn-primary text-xs" style="padding: 0.375rem 0.75rem;">+ Tambah</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#C17E61">Farhan</div>
+            <div id="farhan-funds-list" class="space-y-1.5"></div>
+          </div>
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-2">Tazkiah</div>
+            <div id="tazkiah-funds-list" class="space-y-1.5"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-savings -->
+
+    <!-- ===== SYNC TAB ===== -->
+    <div id="tab-sync" class="tab-content hidden">
+      <!-- Connection Status -->
+      <div class="section-card mb-4">
+        <div class="section-title">Koneksi Undangan</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="section-card" style="padding: 0.625rem 0.875rem;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="sync-dot" id="conn-dot"></span>
+              <span class="text-sm font-medium" id="conn-status">Checking...</span>
+            </div>
+            <div class="text-xs text-ink-tertiary">Undangan API (localhost:3456)</div>
+          </div>
+          <div class="section-card" style="padding: 0.625rem 0.875rem;">
+            <div class="metric-row"><span class="metric-row-label">Last Guest Sync</span><span class="metric-row-value text-xs" id="last-guest-sync">Never</span></div>
+            <div class="metric-row"><span class="metric-row-label">Last RSVP Sync</span><span class="metric-row-value text-xs" id="last-rsvp-sync">Never</span></div>
+            <div class="metric-row"><span class="metric-row-label">Last Check-in</span><span class="metric-row-value text-xs" id="last-checkin-sync">Never</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sync Actions -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <button onclick="syncGuestsToUndangan()" class="section-card text-left cursor-pointer hover:border-accent transition-colors" style="padding: 0.875rem;">
+          <div class="font-heading font-semibold text-sm mb-0.5">Sync Tamu</div>
+          <div class="text-xs text-ink-tertiary">Kirim daftar tamu ke Undangan</div>
+        </button>
+        <button onclick="syncRSVP()" class="section-card text-left cursor-pointer hover:border-accent transition-colors" style="padding: 0.875rem;">
+          <div class="font-heading font-semibold text-sm mb-0.5">Sync RSVP</div>
+          <div class="text-xs text-ink-tertiary">Ambil data RSVP dari Undangan</div>
+        </button>
+        <button onclick="syncCheckin()" class="section-card text-left cursor-pointer hover:border-accent transition-colors" style="padding: 0.875rem;">
+          <div class="font-heading font-semibold text-sm mb-0.5">Sync Check-in</div>
+          <div class="text-xs text-ink-tertiary">Lihat tamu yang sudah hadir</div>
+        </button>
+        <button onclick="syncBudgetImpact()" class="section-card text-left cursor-pointer hover:border-accent transition-colors" style="padding: 0.875rem;">
+          <div class="font-heading font-semibold text-sm mb-0.5">Budget Impact</div>
+          <div class="text-xs text-ink-tertiary">Hitung dampak dari RSVP</div>
+        </button>
+      </div>
+
+      <!-- Sync Results -->
+      <div id="sync-results" class="section-card mb-4 hidden">
+        <div class="section-title">Sync Results</div>
+        <div id="sync-results-content" class="text-sm font-mono bg-surface-alt dark:bg-surface-dark rounded p-2.5 max-h-72 overflow-y-auto whitespace-pre-wrap"></div>
+      </div>
+
+      <!-- Check-in List -->
+      <div id="checkin-list-section" class="section-card hidden">
+        <div class="section-title">Tamu yang Sudah Hadir</div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>QR Code</th>
+                <th>Waktu Hadir</th>
+                <th class="text-right">Pax</th>
+                <th class="text-center">VIP</th>
+              </tr>
+            </thead>
+            <tbody id="checkin-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Budget Impact -->
+      <div id="budget-impact-section" class="section-card mt-4 hidden">
+        <div class="section-title">Dampak Budget dari RSVP</div>
+        <div id="budget-impact-content" class="text-sm"></div>
+      </div>
+    </div><!-- /tab-sync -->
+
+  </main>
+
+  <!-- MODAL: Guest -->
+  <div id="guest-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="font-heading font-semibold text-base mb-3" id="guest-modal-title">Tambah Kategori Tamu</div>
+      <input type="hidden" id="guest-edit-id">
+      <div class="space-y-2.5">
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Kategori</label>
+          <input id="guest-cat" type="text" class="form-input" placeholder="e.g. Keluarga CPP">
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Pemilik</label>
+          <select id="guest-owner" class="form-input">
+            <option value="farhan">Farhan</option>
+            <option value="tazkiah">Tazkiah</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-xs text-ink-secondary block mb-0.5">Total Pax</label>
+            <input id="guest-pax" type="number" class="form-input" value="0">
+          </div>
+          <div>
+            <label class="text-xs text-ink-secondary block mb-0.5">Undangan</label>
+            <input id="guest-undangan" type="number" class="form-input" value="0">
+          </div>
+          <div>
+            <label class="text-xs text-ink-secondary block mb-0.5">Cetak</label>
+            <input id="guest-cetak" type="number" class="form-input" value="0">
+          </div>
+          <div>
+            <label class="text-xs text-ink-secondary block mb-0.5">VIP</label>
+            <input id="guest-vip" type="number" class="form-input" value="0">
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2.5 mt-4">
+        <button onclick="closeGuestModal()" class="btn-secondary flex-1">Batal</button>
+        <button onclick="saveGuest()" class="btn-primary flex-1">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Budget -->
+  <div id="budget-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="font-heading font-semibold text-base mb-3" id="budget-modal-title">Tambah Budget</div>
+      <input type="hidden" id="budget-edit-id">
+      <div class="space-y-2.5">
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Kategori</label>
+          <input id="budget-cat" type="text" class="form-input" placeholder="e.g. nikah">
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Pemilik</label>
+          <select id="budget-owner" class="form-input">
+            <option value="farhan">Farhan</option>
+            <option value="tazkiah">Tazkiah</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Budget (Rp)</label>
+          <input id="budget-amount" type="number" class="form-input" value="0">
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Actual (Rp)</label>
+          <input id="budget-actual" type="number" class="form-input" value="0">
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Deskripsi</label>
+          <input id="budget-desc" type="text" class="form-input" placeholder="Optional">
+        </div>
+      </div>
+      <div class="flex gap-2.5 mt-4">
+        <button onclick="closeBudgetModal()" class="btn-secondary flex-1">Batal</button>
+        <button onclick="saveBudget()" class="btn-primary flex-1">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Fund Source -->
+  <div id="fund-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="font-heading font-semibold text-base mb-3" id="fund-modal-title">Tambah Sumber Dana</div>
+      <input type="hidden" id="fund-edit-id">
+      <div class="space-y-2.5">
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Nama Sumber</label>
+          <input id="fund-name" type="text" class="form-input" placeholder="e.g. Bibit">
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Pemilik</label>
+          <select id="fund-owner" class="form-input">
+            <option value="farhan">Farhan</option>
+            <option value="tazkiah">Tazkiah</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Jumlah (Rp)</label>
+          <input id="fund-amount" type="number" class="form-input" value="0">
+        </div>
+      </div>
+      <div class="flex gap-2.5 mt-4">
+        <button onclick="closeFundModal()" class="btn-secondary flex-1">Batal</button>
+        <button onclick="saveFund()" class="btn-primary flex-1">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Savings Edit -->
+  <div id="savings-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="font-heading font-semibold text-base mb-3" id="savings-modal-title">Edit Tabungan</div>
+      <input type="hidden" id="savings-owner">
+      <div class="space-y-2.5">
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Per Bulan (Rp)</label>
+          <input id="savings-monthly" type="number" class="form-input">
+        </div>
+        <div>
+          <label class="text-xs text-ink-secondary block mb-0.5">Bulan</label>
+          <input id="savings-months" type="number" class="form-input">
+        </div>
+        <div class="section-card" style="padding: 0.625rem;">
+          <span class="text-xs text-ink-secondary">Total Projected: </span>
+          <span class="font-semibold text-sm" style="color:#10B981" id="savings-projected">Rp 0</span>
+        </div>
+      </div>
+      <div class="flex gap-2.5 mt-4">
+        <button onclick="closeSavingsModal()" class="btn-secondary flex-1">Batal</button>
+        <button onclick="saveSavings()" class="btn-primary flex-1">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"><span id="toast-text"></span></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
